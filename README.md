@@ -22,9 +22,9 @@ pip install -r requirements.txt
 1. Для каждого запроса на сайт [superjob.ru](https://russia.superjob.ru/) необходимо передавать секретный ключ (Secret key), 
 для получения которого необходимо зарегистрировать приложение.
 2. Зарегистрируйтесь на сайте [https://api.superjob.ru/](https://api.superjob.ru/), заполните форму получите Secret key, 
-например такой: **v3.r.137326471.3be57492bc23441e6709d8ca82677eee1bae130d.Zg8r1mb4mPl0PegSGPdac1977542fecf00231da7**.
+например такой: **v3.r.137326471.3be57492bc23441e6709d8ca82677eee1bae130d.897c300450d85c52bc85d054a2e27753b3a87d53**.
 3. Полученный ключ запишите в переменную окружения .env, например:
-**```SUPERJOB_SECRET_KEY=v3.r.137326471.3be57492bc23441e6709d8ca82677eee1bae130d.Zg8r1mb4mPl0PegSGPdac1977542fecf00231da7```**
+**```SUPERJOB_SECRET_KEY=v3.r.137326471.3be57492bc23441e6709d8ca82677eee1bae130d.897c300450d85c52bc85d054a2e27753b3a87d53```**
 
 ### Примеры
 Для получения справки используйте аргумент ```-h``` или ```--help```.
