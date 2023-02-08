@@ -84,13 +84,13 @@ def predict_rub_salary_hh(language, area=None, period=None):
         vacancies_processed = len(vacancy_salaries)
         average_salary = int(sum(vacancy_salaries) / vacancies_processed)
 
-    dataset = {
+    vacancies_content = {
         'vacancies_found': vacancies_found,
         'vacancies_processed': vacancies_processed,
         'average_salary': average_salary
     }
 
-    return dataset
+    return vacancies_content
 
 
 def fetch_vacancy_sj(sj_key, language, area=None, period=0, page=None):
@@ -154,13 +154,13 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0):
         vacancies_processed = len(vacancy_salaries)
         average_salary = int(sum(vacancy_salaries) / vacancies_processed)
 
-    dataset = {
+    vacancies_content = {
         'vacancies_found': vacancies_found,
         'vacancies_processed': vacancies_processed,
         'average_salary': average_salary
     }
 
-    return dataset
+    return vacancies_content
 
 
 def main():
@@ -184,18 +184,18 @@ def main():
         table_title_hh = f'HeadHunter {area}'
         table_title_sj = f'SuperJob {area}'
 
-    dataset_hh = dict()
-    dataset_sj = dict()
+    vacancies_json_hh = dict()
+    vacancies_json_sj = dict()
 
     programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
 
     for language in programming_languages:
-        dataset_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
-        dataset_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period)
+        vacancies_json_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
+        vacancies_json_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period)
         time.sleep(1)
 
-    tools.print_terminal_table(dataset_hh, table_title_hh)
-    tools.print_terminal_table(dataset_sj, table_title_sj)
+    tools.print_terminal_table(vacancies_json_hh, table_title_hh)
+    tools.print_terminal_table(vacancies_json_sj, table_title_sj)
 
 
 if __name__ == '__main__':
