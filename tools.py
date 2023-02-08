@@ -2,16 +2,14 @@ import pandas as pd
 from terminaltables import AsciiTable
 
 
-def compute_average_salary(salary_from='', salary_to=''):
+def compute_average_salary(salary_from=0, salary_to=0):
     """Возвращает результат расчёта среднего значения зарплаты или None"""
     if salary_from and salary_to:
         return (salary_from + salary_to)/2
     elif not salary_from:
         return salary_to * 0.8
-    elif not salary_to:
-        return salary_from * 1.2
     else:
-        return None
+        return salary_from * 1.2
 
 
 def print_terminal_table(records, title):
