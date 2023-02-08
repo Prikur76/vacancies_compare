@@ -68,7 +68,7 @@ def predict_rub_salary_hh(language, area=None, period=None):
     average_salary = 0
     vacancies_processed = 0
 
-    if len(vacancy_salaries) > 0:
+    if len(vacancy_salaries):
         vacancies_processed = len(vacancy_salaries)
         average_salary = int(sum(vacancy_salaries) / vacancies_processed)
 
