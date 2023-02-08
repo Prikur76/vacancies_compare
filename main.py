@@ -9,7 +9,7 @@ import tools
 
 
 def fetch_area_id_hh(area):
-    """Возвращает результат поиска (словарь IDs) территорий России по справочнику hh.ru или None"""
+    """Возвращает результат поиска (словарь IDs) территорий России"""
     hh_url = "https://api.hh.ru/areas"
     headers = {
         'User-Agent': 'App/1.0',
@@ -43,29 +43,42 @@ def fetch_vacancy_hh(language, area=None, period=None, page=None):
 
 def predict_rub_salary_hh(language, area=None, period=None):
     """Возвращает средний размер зарплаты по заданной вакансии на hh.ru"""
-    vacancy_salaries = []
     vacancies_found = 0
+    vacancies_processed = 0
+    average_salary = 0
+
+    vacancy_salaries = []
     page = 0
     pages_count = 1
     while page < pages_count:
         try:
             page_response = fetch_vacancy_hh(language, area=area, period=period, page=page)
-            vacancies_found = page_response['found']
-            pages_count = int(page_response['pages'])
-            for vacancy in page_response['items']:
-                currency = vacancy['salary']['currency']
-                salary_from = vacancy['salary']['from']
-                salary_to = vacancy['salary']['to']
-                if currency == 'RUR' and (salary_from or salary_to):
-                    rub_salary = tools.compute_average_salary(salary_from, salary_to)
-                    vacancy_salaries.append(rub_salary)
-        except requests.exceptions.HTTPError as err:
-            print(f"Page {page}: {err}")
-        page += 1
-        time.sleep(1)
+            vacancies_total = page_response['found']
+            vacancies_count_on_page = len(page_response['items'])
 
-    average_salary = 0
-    vacancies_processed = 0
+            if vacancies_total:
+                vacancies_found = vacancies_total
+
+            if vacancies_count_on_page:
+                pages_count = round(vacancies_found/vacancies_count_on_page + 0.5)
+
+                for vacancy in page_response['items']:
+                    currency = vacancy['salary']['currency']
+                    salary_from = vacancy['salary']['from']
+                    salary_to = vacancy['salary']['to']
+
+                    if currency == 'RUR' and (salary_from or salary_to):
+                        rub_salary = tools.compute_average_salary(salary_from, salary_to)
+                        vacancy_salaries.append(rub_salary)
+                page += 1
+            else:
+                page = pages_count
+
+        except requests.exceptions.HTTPError as err:
+            print(f"Page {page} from {pages_count}: end of fetch limits.\n{err}")
+            page = pages_count
+
+        time.sleep(1)
 
     if len(vacancy_salaries):
         vacancies_processed = len(vacancy_salaries)
@@ -76,6 +89,7 @@ def predict_rub_salary_hh(language, area=None, period=None):
         'vacancies_processed': vacancies_processed,
         'average_salary': average_salary
     }
+
     return dataset
 
 
@@ -99,40 +113,42 @@ def fetch_vacancy_sj(sj_key, language, area=None, period=0, page=None):
 
 def predict_rub_salary_sj(sj_key, language, area=None, period=0):
     """Возвращает расчёт средней заработной платы по данным сайта SuperJob.ru"""
-    vacancy_salaries = []
     vacancies_found = 0
+    vacancies_processed = 0
+    average_salary = 0
+
+    vacancy_salaries = []
     page = 0
     pages_count = 1
     while page < pages_count:
         try:
             page_response = fetch_vacancy_sj(sj_key, language, area=area, period=period, page=page)
-            objects_total = page_response['total']
-            objects_count_on_page = len(page_response['objects'])
+            vacancies_total = page_response['total']
+            vacancies_count_on_page = len(page_response['objects'])
 
-            if objects_total:
-                vacancies_found = objects_total
+            if vacancies_total:
+                vacancies_found = vacancies_total
 
-            if objects_count_on_page:
-                pages_count = round(int(vacancies_found)/objects_count_on_page + 0.5)
+            if vacancies_count_on_page:
+                pages_count = round(vacancies_found/vacancies_count_on_page + 0.5)
 
                 for vacancy in page_response['objects']:
                     currency = vacancy['currency']
                     salary_from = vacancy['payment_from']
                     salary_to = vacancy['payment_to']
+
                     if currency == 'rub' and (salary_from or salary_to):
                         rub_salary = tools.compute_average_salary(salary_from, salary_to)
                         vacancy_salaries.append(rub_salary)
                 page += 1
             else:
-                pages_count = page
-
-            time.sleep(1)
+                page = pages_count
 
         except requests.exceptions.HTTPError as err:
-            print(f"Page {page}: {err}")
+            print(f"Page {page} from {pages_count}: end of fetch limits.\n{err}")
+            page = pages_count
 
-    average_salary = 0
-    vacancies_processed = 0
+        time.sleep(1)
 
     if len(vacancy_salaries):
         vacancies_processed = len(vacancy_salaries)
@@ -143,6 +159,7 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0):
         'vacancies_processed': vacancies_processed,
         'average_salary': average_salary
     }
+
     return dataset
 
 
@@ -160,6 +177,7 @@ def main():
     table_title_hh = 'HeadHunter'
     table_title_sj = 'SuperJob'
 
+    area_id = None
     if area:
         area = area.capitalize()
         area_id = fetch_area_id_hh(area)
@@ -169,16 +187,14 @@ def main():
     dataset_hh = dict()
     dataset_sj = dict()
 
-    # programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
-
-    programming_languages = ['Python', 'C', 'Kotlin']
+    programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
 
     for language in programming_languages:
-        # dataset_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
+        dataset_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
         dataset_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period)
         time.sleep(1)
 
-    # tools.print_terminal_table(dataset_hh, table_title_hh)
+    tools.print_terminal_table(dataset_hh, table_title_hh)
     tools.print_terminal_table(dataset_sj, table_title_sj)
 
 
