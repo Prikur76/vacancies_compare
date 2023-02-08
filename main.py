@@ -17,14 +17,12 @@ def fetch_area_id_hh(area):
     response = requests.get(url=hh_url, headers=headers)
     response.raise_for_status()
     rus_areas = response.json()[0]['areas']
-    if area:
-        area_id = [row['id'] for row in rus_areas if area.lower() in row['name'].lower()]
-        return area_id
+    area_id = [row['id'] for row in rus_areas if area.lower() in row['name'].lower()]
+    return area_id
 
 
 def fetch_vacancy_hh(language, area=None, period=None, page=None):
     """Возвращает ответ на запрос по словарю вакансий или вызывает исключение"""
-    area_id = fetch_area_id_hh(area)
     hh_url = "https://api.hh.ru/vacancies"
     headers = {
         'User-Agent': 'App/1.0',
@@ -32,7 +30,7 @@ def fetch_vacancy_hh(language, area=None, period=None, page=None):
     payload = {
         'host': 'hh.ru',
         'text': language,
-        'area': area_id,
+        'area': area,
         'period': period,
         'page': page,
         'only_with_salary': True,
@@ -151,6 +149,7 @@ def main():
 
     if area:
         area = area.capitalize()
+        area_id = fetch_area_id_hh(area)
         table_title_hh = f'HeadHunter {area}'
         table_title_sj = f'SuperJob {area}'
 
@@ -162,7 +161,7 @@ def main():
     programming_languages = ['Python', 'C', 'Kotlin']
 
     for language in programming_languages:
-        # dataset_hh[language] = predict_rub_salary_hh(language, area=area, period=period)
+        dataset_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
         dataset_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period)
         time.sleep(1)
 
