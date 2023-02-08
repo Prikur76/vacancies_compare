@@ -3,7 +3,7 @@ from terminaltables import AsciiTable
 
 
 def compute_average_salary(salary_from=0, salary_to=0):
-    """Возвращает результат расчёта среднего значения зарплаты или None"""
+    """Возвращает результат расчёта среднего значения зарплаты"""
     if salary_from and salary_to:
         return (salary_from + salary_to)/2
     elif not salary_from:
