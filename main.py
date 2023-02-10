@@ -52,31 +52,25 @@ def predict_rub_salary_hh(language, area=None, period=None):
     while page < pages_count:
         try:
             page_response = fetch_vacancy_hh(language, area=area, period=period, page=page)
+            pages_count = page_response['pages']
             vacancies_total = page_response['found']
-            vacancies_count_on_page = len(page_response['items'])
 
             if vacancies_total:
                 vacancies_found = vacancies_total
 
-            if vacancies_count_on_page:
-                pages_count = round(vacancies_found/vacancies_count_on_page + 0.5)
+            for vacancy in page_response['items']:
+                if vacancy['salary']:
+                    currency = vacancy['salary']['currency']
+                    salary_from = vacancy['salary']['from']
+                    salary_to = vacancy['salary']['to']
 
-                for vacancy in page_response['items']:
-                    if vacancy['salary']:
-                        currency = vacancy['salary']['currency']
-                        salary_from = vacancy['salary']['from']
-                        salary_to = vacancy['salary']['to']
-
-                        if currency == 'RUR' and (salary_from or salary_to):
-                            rub_salary = tools.compute_average_salary(salary_from, salary_to)
-                            vacancy_salaries.append(rub_salary)
-                page += 1
-            else:
-                page = pages_count
+                    if currency == 'RUR' and (salary_from or salary_to):
+                        rub_salary = tools.compute_average_salary(salary_from, salary_to)
+                        vacancy_salaries.append(rub_salary)
+            page += 1
 
         except requests.exceptions.HTTPError as err:
-            print(f"Page {page} from {pages_count}: end of fetch limits.\n{err}")
-            page = pages_count
+            print(f"Page {page} from {pages_count}.\nError: {err}")
 
         time.sleep(1)
 
@@ -89,7 +83,6 @@ def predict_rub_salary_hh(language, area=None, period=None):
         'vacancies_processed': vacancies_processed,
         'average_salary': average_salary
     }
-
     return vacancies_content
 
 
@@ -159,7 +152,6 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0):
         'vacancies_processed': vacancies_processed,
         'average_salary': average_salary
     }
-
     return vacancies_content
 
 
@@ -187,7 +179,7 @@ def main():
     vacancies_hh = dict()
     vacancies_sj = dict()
 
-    programming_languages = ['Python', 'С++', 'C#']    # , 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin'
+    programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
 
     for language in programming_languages:
         vacancies_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
