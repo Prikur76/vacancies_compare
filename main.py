@@ -184,18 +184,18 @@ def main():
         table_title_hh = f'HeadHunter {area}'
         table_title_sj = f'SuperJob {area}'
 
-    vacancies_json_hh = dict()
-    vacancies_json_sj = dict()
+    vacancies_hh = dict()
+    vacancies_sj = dict()
 
     programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
 
     for language in programming_languages:
-        vacancies_json_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
-        vacancies_json_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period)
+        vacancies_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
+        vacancies_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period)
         time.sleep(1)
 
-    tools.print_terminal_table(vacancies_json_hh, table_title_hh)
-    tools.print_terminal_table(vacancies_json_sj, table_title_sj)
+    tools.print_terminal_table(vacancies_hh, table_title_hh)
+    tools.print_terminal_table(vacancies_sj, table_title_sj)
 
 
 if __name__ == '__main__':
