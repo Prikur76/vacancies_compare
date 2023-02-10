@@ -16,11 +16,11 @@ def print_terminal_table(records, title):
     """Выводит на экран таблицу с результатами поиска в табличном виде"""
     vacancies = pd.DataFrame(records).T
     vacancies['programming_language'] = vacancies.index
-    sort_vacancies = vacancies[['programming_language', 'vacancies_found','vacancies_processed', 'average_salary']]\
+    sorted_vacancies = vacancies[['programming_language', 'vacancies_found','vacancies_processed', 'average_salary']]\
         .sort_values(by=['average_salary'], ascending=False)
-    sort_vacancies = sort_vacancies.values.tolist()
+    sorted_vacancies = sort_vacancies.values.tolist()
     table_for_print = [['Язык программирования', 'Вакансий найдено', 'Вакансий обработано', 'Средняя зарплата']]
-    for row in sort_vacancies:
+    for row in sorted_vacancies:
         table_for_print.append(row)
     terminal_table_instance = AsciiTable(table_for_print, title)
     print('\n', terminal_table_instance.table)
