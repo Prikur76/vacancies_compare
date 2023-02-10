@@ -21,7 +21,7 @@ def fetch_area_id_hh(area):
     return area_id
 
 
-def fetch_vacancy_hh(language, area=None, period=None, page=None):
+def fetch_vacancy_hh(language, area=None, period=None, page=None, only_with_salary=False):
     """Возвращает ответ на запрос по словарю вакансий или вызывает исключение"""
     hh_url = "https://api.hh.ru/vacancies"
     headers = {
@@ -33,6 +33,7 @@ def fetch_vacancy_hh(language, area=None, period=None, page=None):
         'area': area,
         'period': period,
         'page': page,
+        'only_with_salary': only_with_salary,
         'currency': 'RUR',
     }
     response = requests.get(url=hh_url, params=payload, headers=headers)
@@ -40,7 +41,7 @@ def fetch_vacancy_hh(language, area=None, period=None, page=None):
     return response.json()
 
 
-def predict_rub_salary_hh(language, area=None, period=None):
+def predict_rub_salary_hh(language, area=None, period=None, only_with_salary=False):
     """Возвращает средний размер зарплаты по заданной вакансии на hh.ru"""
     vacancies_found = 0
     vacancies_processed = 0
@@ -51,7 +52,8 @@ def predict_rub_salary_hh(language, area=None, period=None):
     pages_count = 1
     while page < pages_count:
         try:
-            page_response = fetch_vacancy_hh(language, area=area, period=period, page=page)
+            page_response = fetch_vacancy_hh(language, area=area, period=period,
+                                             page=page, only_with_salary=only_with_salary)
             pages_count = page_response['pages']
             vacancies_total = page_response['found']
 
@@ -86,7 +88,7 @@ def predict_rub_salary_hh(language, area=None, period=None):
     return vacancies_content
 
 
-def fetch_vacancy_sj(sj_key, language, area=None, period=0, page=None):
+def fetch_vacancy_sj(sj_key, language, area=None, period=0, page=None, no_agreement=0):
     """Возвращает ответ сайта SuperJob.ru по заданным параметрам"""
     sj_url = 'https://api.superjob.ru/2.0/vacancies/'
     headers = {
@@ -97,13 +99,14 @@ def fetch_vacancy_sj(sj_key, language, area=None, period=0, page=None):
         'town': area,
         'period': period,
         'page': page,
+        'no_agreement': no_agreement,
     }
     response = requests.get(url=sj_url, params=payload, headers=headers)
     response.raise_for_status()
     return response.json()
 
 
-def predict_rub_salary_sj(sj_key, language, area=None, period=0):
+def predict_rub_salary_sj(sj_key, language, area=None, period=0, no_agreement=0):
     """Возвращает расчёт средней заработной платы по данным сайта SuperJob.ru"""
     vacancies_found = 0
     vacancies_processed = 0
@@ -114,7 +117,8 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0):
     pages_count = 1
     while page < pages_count:
         try:
-            page_response = fetch_vacancy_sj(sj_key, language, area=area, period=period, page=page)
+            page_response = fetch_vacancy_sj(sj_key, language, area=area, period=period,
+                                             page=page, no_agreement=no_agreement)
             vacancies_total = page_response['total']
             vacancies_count_on_page = len(page_response['objects'])
 
@@ -160,18 +164,23 @@ def main():
     sj_key = os.environ.get('SUPERJOB_SECRET_KEY')
 
     parser = argparse.ArgumentParser(description='Поиск средней зарплаты по вакансиям')
-    parser.add_argument('-a', '--area', default=None, help='Ввести наименование города')
-    parser.add_argument('-p', '--period', type=int, default=None, help='Введите число - период поиска ')
+    parser.add_argument('-a', '--area', default=None,
+                        help='Ввести наименование города')
+    parser.add_argument('-p', '--period', type=int, default=None,
+                        help='Введите число - период поиска')
+    parser.add_argument('-ws', '--with_salaries', type=int, default=0,
+                        help='Введите 1 для включения фильтра вакансий с зарплатами')
     args = parser.parse_args()
-    area = args.area
+    area = args.area.capitalize()
     period = args.period
+    no_agreement = args.with_salaries
+    only_with_salary = bool(no_agreement)
 
     table_title_hh = 'HeadHunter'
     table_title_sj = 'SuperJob'
 
     area_id = None
     if area:
-        area = area.capitalize()
         area_id = fetch_area_id_hh(area)
         table_title_hh = f'HeadHunter {area}'
         table_title_sj = f'SuperJob {area}'
@@ -179,11 +188,13 @@ def main():
     vacancies_hh = dict()
     vacancies_sj = dict()
 
-    programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
+    programming_languages = ['Python', 'С++', 'C#', 'Java']  # , 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin'
 
     for language in programming_languages:
-        vacancies_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
-        vacancies_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period)
+        vacancies_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period,
+                                                       only_with_salary=only_with_salary)
+        vacancies_sj[language] = predict_rub_salary_sj(sj_key, language, area=area, period=period,
+                                                       no_agreement=no_agreement)
         time.sleep(1)
 
     tools.print_terminal_table(vacancies_hh, table_title_hh)
