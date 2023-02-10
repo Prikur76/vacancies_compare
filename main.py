@@ -188,7 +188,7 @@ def main():
     vacancies_hh = dict()
     vacancies_sj = dict()
 
-    programming_languages = ['Python', 'С++', 'C#', 'Java']  # , 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin'
+    programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
 
     for language in programming_languages:
         vacancies_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period,
