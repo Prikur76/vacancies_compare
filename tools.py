@@ -18,7 +18,7 @@ def print_terminal_table(records, title):
     vacancies['programming_language'] = vacancies.index
     sorted_vacancies = vacancies[['programming_language', 'vacancies_found','vacancies_processed', 'average_salary']]\
         .sort_values(by=['average_salary'], ascending=False)
-    sorted_vacancies = sort_vacancies.values.tolist()
+    sorted_vacancies = sorted_vacancies.values.tolist()
     table_for_print = [['Язык программирования', 'Вакансий найдено', 'Вакансий обработано', 'Средняя зарплата']]
     for row in sorted_vacancies:
         table_for_print.append(row)
