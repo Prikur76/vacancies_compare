@@ -80,7 +80,7 @@ def predict_rub_salary_hh(language, area=None, period=None):
 
         time.sleep(1)
 
-    if len(vacancy_salaries):
+    if vacancy_salaries:
         vacancies_processed = len(vacancy_salaries)
         average_salary = int(sum(vacancy_salaries) / vacancies_processed)
 
@@ -150,7 +150,7 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0):
 
         time.sleep(1)
 
-    if len(vacancy_salaries):
+    if vacancy_salaries:
         vacancies_processed = len(vacancy_salaries)
         average_salary = int(sum(vacancy_salaries) / vacancies_processed)
 
