@@ -33,7 +33,6 @@ def fetch_vacancy_hh(language, area=None, period=None, page=None):
         'area': area,
         'period': period,
         'page': page,
-        'only_with_salary': True,
         'currency': 'RUR',
     }
     response = requests.get(url=hh_url, params=payload, headers=headers)
@@ -63,13 +62,14 @@ def predict_rub_salary_hh(language, area=None, period=None):
                 pages_count = round(vacancies_found/vacancies_count_on_page + 0.5)
 
                 for vacancy in page_response['items']:
-                    currency = vacancy['salary']['currency']
-                    salary_from = vacancy['salary']['from']
-                    salary_to = vacancy['salary']['to']
+                    if vacancy['salary']:
+                        currency = vacancy['salary']['currency']
+                        salary_from = vacancy['salary']['from']
+                        salary_to = vacancy['salary']['to']
 
-                    if currency == 'RUR' and (salary_from or salary_to):
-                        rub_salary = tools.compute_average_salary(salary_from, salary_to)
-                        vacancy_salaries.append(rub_salary)
+                        if currency == 'RUR' and (salary_from or salary_to):
+                            rub_salary = tools.compute_average_salary(salary_from, salary_to)
+                            vacancy_salaries.append(rub_salary)
                 page += 1
             else:
                 page = pages_count
@@ -82,7 +82,7 @@ def predict_rub_salary_hh(language, area=None, period=None):
 
     if vacancy_salaries:
         vacancies_processed = len(vacancy_salaries)
-        average_salary = int(sum(vacancy_salaries) / vacancies_processed)
+        average_salary = int(sum(vacancy_salaries)/vacancies_processed)
 
     vacancies_content = {
         'vacancies_found': vacancies_found,
@@ -104,7 +104,6 @@ def fetch_vacancy_sj(sj_key, language, area=None, period=0, page=None):
         'town': area,
         'period': period,
         'page': page,
-        'no_agreement': 1,
     }
     response = requests.get(url=sj_url, params=payload, headers=headers)
     response.raise_for_status()
@@ -133,13 +132,14 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0):
                 pages_count = round(vacancies_found/vacancies_count_on_page + 0.5)
 
                 for vacancy in page_response['objects']:
-                    currency = vacancy['currency']
-                    salary_from = vacancy['payment_from']
-                    salary_to = vacancy['payment_to']
+                    if not vacancy['agreement']:
+                        currency = vacancy['currency']
+                        salary_from = vacancy['payment_from']
+                        salary_to = vacancy['payment_to']
 
-                    if currency == 'rub' and (salary_from or salary_to):
-                        rub_salary = tools.compute_average_salary(salary_from, salary_to)
-                        vacancy_salaries.append(rub_salary)
+                        if currency == 'rub' and (salary_from or salary_to):
+                            rub_salary = tools.compute_average_salary(salary_from, salary_to)
+                            vacancy_salaries.append(rub_salary)
                 page += 1
             else:
                 page = pages_count
@@ -152,7 +152,7 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0):
 
     if vacancy_salaries:
         vacancies_processed = len(vacancy_salaries)
-        average_salary = int(sum(vacancy_salaries) / vacancies_processed)
+        average_salary = int(sum(vacancy_salaries)/vacancies_processed)
 
     vacancies_content = {
         'vacancies_found': vacancies_found,
@@ -187,7 +187,7 @@ def main():
     vacancies_hh = dict()
     vacancies_sj = dict()
 
-    programming_languages = ['Python', 'С++', 'C#', 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin']
+    programming_languages = ['Python', 'С++', 'C#']    # , 'Java', 'JavaScript', 'C', 'PHP', 'Swift', 'Go', 'Kotlin'
 
     for language in programming_languages:
         vacancies_hh[language] = predict_rub_salary_hh(language, area=area_id, period=period)
