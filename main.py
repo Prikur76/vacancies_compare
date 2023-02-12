@@ -68,7 +68,8 @@ def predict_rub_salary_hh(language, area=None, period=None, only_with_salary=Fal
 
                     if currency == 'RUR' and (salary_from or salary_to):
                         rub_salary = tools.compute_average_salary(salary_from, salary_to)
-                        vacancy_salaries.append(rub_salary)
+                        if rub_salary:
+                            vacancy_salaries.append(rub_salary)
             page += 1
 
         except requests.exceptions.HTTPError as err:
@@ -136,7 +137,8 @@ def predict_rub_salary_sj(sj_key, language, area=None, period=0, no_agreement=0)
 
                         if currency == 'rub' and (salary_from or salary_to):
                             rub_salary = tools.compute_average_salary(salary_from, salary_to)
-                            vacancy_salaries.append(rub_salary)
+                            if rub_salary:
+                                vacancy_salaries.append(rub_salary)
                 page += 1
             else:
                 page = pages_count
